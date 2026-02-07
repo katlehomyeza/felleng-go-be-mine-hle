@@ -37,7 +37,7 @@ function launchConfetti() {
 }
 
 yesBtn.addEventListener('click', () => {
-    fetch('https://gfproposal-phi.vercel.app/api/email', {
+    fetch('https://gf-proposal-phi.vercel.app/api/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
