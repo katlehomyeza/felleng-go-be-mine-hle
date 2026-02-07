@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Will you be my VALENTINE?</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+      #gif-section {
+          display: none;
+      }
+
+      #redirectBtn {
+          display: none;
+          margin-top: 20px;
+      }
+  </style>
+
+</head>
+<body>
+
+  <video autoplay muted loop playsinline id="bgVideo">
+    <source src="./assets/pretty-photos/23.mp4" type="video/mp4">
+  </video>
+
+  <div class="container">
+
+    <div id="question-section">
+        <h1>Will you be my valentine?</h1>
+        <div class="heart">❤️</div>
+        <div class="button-group">
+            <button id="yesBtn">Yes, absolutely!</button>
+            <button id="noBtn">No</button>
+        </div>   
+    </div>
+
+    <div id="gif-section">
+
+        <div class="tenor-gif-embed"
+             data-postid="6508383405014947627"
+             data-share-method="host"
+             data-aspect-ratio="1"
+             data-width="100%">
+        </div>
+
+        <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+
+        <button id="redirectBtn">One final bit of lerato</button>
+
+    </div>
+
+  </div>
+
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <video id="noVideo" src="./assets/she never give me.mp4" controls></video>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

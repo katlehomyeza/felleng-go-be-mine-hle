@@ -137,3 +137,14 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+names.py
+/assets/*
+
+!/assets/she never give me.mp4
+
+!/assets/pretty-photos/
+
+/assets/pretty-photos/*
+
+!/assets/pretty-photos/23.mp4
