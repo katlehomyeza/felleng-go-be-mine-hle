@@ -31,8 +31,21 @@
         }
 
         #spotify-container {
+            position: fixed;
             width: 700px;
             height: 400px;
+            top: 50%;
+            left: 50%;
+            /* Responsive scaling based on viewport width */
+            transform: translate(-50%, -50%) 
+                       translateX(calc(390 * var(--scale-factor) * 1px)) 
+                       translateY(calc(-100 * var(--scale-factor) * 1px)) 
+                       rotateX(-1.8deg) 
+                       rotateY(-6deg) 
+                       rotateZ(-1.8deg) 
+                       scale(calc(0.39 * var(--scale-factor)));
+            transform-origin: center center;
+            will-change: transform;
             background: 
                 linear-gradient(165deg, rgba(15,15,15,1) 0%, rgba(8,8,8,1) 100%),
                 radial-gradient(ellipse at top left, rgba(212,175,55,0.05), transparent 50%),
@@ -46,7 +59,35 @@
                 inset 0 -1px 0 rgba(0,0,0,0.7),
                 0 20px 60px rgba(0,0,0,0.95),
                 0 0 80px rgba(212,175,55,0.12);
-            position: relative;
+            animation: goldPulse 4s ease-in-out infinite;
+            z-index: 1000;
+            pointer-events: auto;
+        }
+
+        /* Base scale factor for desktop (1920px reference width) */
+        :root {
+            --scale-factor: 1;
+        }
+
+        @keyframes goldPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 0 0 1px rgba(212,175,55,0.2),
+                    0 0 0 2px rgba(0,0,0,0.8),
+                    inset 0 1px 0 rgba(255,255,255,0.04),
+                    inset 0 -1px 0 rgba(0,0,0,0.7),
+                    0 20px 60px rgba(0,0,0,0.95),
+                    0 0 80px rgba(212,175,55,0.12);
+            }
+            50% {
+                box-shadow: 
+                    0 0 0 1px rgba(212,175,55,0.35),
+                    0 0 0 2px rgba(0,0,0,0.8),
+                    inset 0 1px 0 rgba(255,255,255,0.06),
+                    inset 0 -1px 0 rgba(0,0,0,0.7),
+                    0 20px 60px rgba(0,0,0,0.95),
+                    0 0 100px rgba(212,175,55,0.18);
+            }
         }
 
         /* Premium glass reflection */
@@ -101,10 +142,6 @@
             display: block;
             border-radius: 12px;
             background: transparent;
-        }
-
-        #spotify-container {
-            animation: goldPulse 4s ease-in-out infinite;
         }
 
         /* Corner accents */
@@ -199,39 +236,47 @@
 
     <img id="car-bg" src="../car.png" alt="Ferrari Interior">
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
+    <div id="spotify-container">
+        <div class="corner-accent top-left"></div>
+        <div class="corner-accent top-right"></div>
+        <div class="corner-accent bottom-left"></div>
+        <div class="corner-accent bottom-right"></div>
+        
+        <div id="player-wrapper">
+            <iframe id="spotify-frame"
+                src="https://open.spotify.com/embed/playlist/6qqM8Mjf5CvLCLyVR0ZvIB?utm_source=generator&theme=0"
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                allowfullscreen
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+
+    <script>
+        // Dynamic scaling based on viewport
+        function updateScale() {
+            const baseWidth = 1920; // Reference desktop width
+            const currentWidth = window.innerWidth;
+            const scaleFactor = currentWidth / baseWidth;
+            document.documentElement.style.setProperty('--scale-factor', scaleFactor);
         }
-    </script>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
-
-        let camera, scene, renderer, cssRenderer;
-        let spotifyObject, reflectionMesh;
 
         // Check orientation on mobile
         function checkOrientation() {
             const rotateMsg = document.getElementById('rotate-message');
             
-            // Multiple detection methods for reliability
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768;
             
-            // Use screen.orientation if available, otherwise fall back to dimensions
             let isPortrait;
             if (window.screen && window.screen.orientation) {
                 const type = window.screen.orientation.type;
                 isPortrait = type.includes('portrait');
             } else if (window.orientation !== undefined) {
-                // For older iOS devices
                 isPortrait = window.orientation === 0 || window.orientation === 180;
             } else {
-                // Fallback to dimensions
                 isPortrait = window.innerHeight > window.innerWidth;
             }
             
@@ -242,129 +287,29 @@
             }
         }
 
-        // Check on load and orientation change
+        // Initial setup
+        updateScale();
         checkOrientation();
         
-        // Listen to all possible orientation change events
+        // Update on resize
         window.addEventListener('resize', () => {
+            updateScale();
             setTimeout(checkOrientation, 100);
         });
         
         window.addEventListener('orientationchange', () => {
+            updateScale();
             setTimeout(checkOrientation, 200);
         });
         
         if (window.screen && window.screen.orientation) {
             window.screen.orientation.addEventListener('change', () => {
+                updateScale();
                 setTimeout(checkOrientation, 100);
             });
         }
         
         setInterval(checkOrientation, 500);
-
-        init();
-        animate();
-
-        function init() {
-            const container = document.createElement('div');
-            document.body.appendChild(container);
-
-            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000);
-            camera.position.set(0, 0, 1000);
-
-            scene = new THREE.Scene();
-
-            // Main container
-            const spotifyDiv = document.createElement('div');
-            spotifyDiv.id = 'spotify-container';
-
-            // Corner accents
-            const corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-            corners.forEach(corner => {
-                const accent = document.createElement('div');
-                accent.className = 'corner-accent ' + corner;
-                spotifyDiv.appendChild(accent);
-            });
-
-            // Wrapper for padding
-            const wrapper = document.createElement('div');
-            wrapper.id = 'player-wrapper';
-// https://open.spotify.com/playlist/6qqM8Mjf5CvLCLyVR0ZvIB?si=zSB2G8fhQgO7smOxtOOOdQ
-            // Spotify iframe
-            const iframe = document.createElement('iframe');
-            iframe.id = 'spotify-frame';
-            iframe.src = 'https://open.spotify.com/embed/playlist/6qqM8Mjf5CvLCLyVR0ZvIB?utm_source=generator&theme=0';
-            iframe.width = '100%';
-            iframe.height = '100%';
-            iframe.frameBorder = '0';
-            iframe.allowFullscreen = true;
-            iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
-            iframe.loading = 'lazy';
-
-            wrapper.appendChild(iframe);
-            spotifyDiv.appendChild(wrapper);
-
-            spotifyObject = new CSS3DObject(spotifyDiv);
-            
-            // Adjusted positioning for larger size - zoomed in more
-            spotifyObject.position.set(380, 85, 0);
-            spotifyObject.rotation.x = -0.032;
-            spotifyObject.rotation.y = -0.106;
-            spotifyObject.rotation.z = -0.032;
-            spotifyObject.scale.set(0.58, 0.58, 0.58);
-
-            scene.add(spotifyObject);
-
-            // Enhanced glass reflection
-            const glassGeo = new THREE.PlaneGeometry(700, 400);
-            const glassMat = new THREE.MeshBasicMaterial({ 
-                color: 0xffffff,
-                transparent: true, 
-                opacity: 0.04,
-                side: THREE.DoubleSide,
-                blending: THREE.AdditiveBlending
-            });
-            reflectionMesh = new THREE.Mesh(glassGeo, glassMat);
-            scene.add(reflectionMesh);
-
-            // WebGL Renderer
-            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.domElement.style.position = 'absolute';
-            renderer.domElement.style.top = '0';
-            renderer.domElement.style.pointerEvents = 'none';
-            renderer.domElement.style.zIndex = '1';
-            container.appendChild(renderer.domElement);
-
-            // CSS3D Renderer
-            cssRenderer = new CSS3DRenderer();
-            cssRenderer.setSize(window.innerWidth, window.innerHeight);
-            cssRenderer.domElement.style.position = 'absolute';
-            cssRenderer.domElement.style.top = '0';
-            cssRenderer.domElement.style.zIndex = '0';
-            container.appendChild(cssRenderer.domElement);
-
-            window.addEventListener('resize', onWindowResize);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            cssRenderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            reflectionMesh.position.copy(spotifyObject.position);
-            reflectionMesh.rotation.copy(spotifyObject.rotation);
-            reflectionMesh.scale.copy(spotifyObject.scale);
-
-            renderer.render(scene, camera);
-            cssRenderer.render(scene, camera);
-        }
     </script>
 </body>
 </html>
