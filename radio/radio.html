@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
     <title>Ferrari Dashboard Spotify</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
@@ -36,14 +36,14 @@
             height: 400px;
             top: 50%;
             left: 50%;
-            /* Responsive scaling based on viewport width */
+            /* Responsive scaling with clamped values */
             transform: translate(-50%, -50%) 
-                       translateX(calc(390 * var(--scale-factor) * 1px)) 
-                       translateY(calc(-100 * var(--scale-factor) * 1px)) 
+                       translateX(calc(clamp(-500px, 390 * var(--scale-factor) * 1px, 500px))) 
+                       translateY(calc(clamp(-300px, -100 * var(--scale-factor) * 1px, 300px))) 
                        rotateX(-1.8deg) 
                        rotateY(-6deg) 
                        rotateZ(-1.8deg) 
-                       scale(calc(0.39 * var(--scale-factor)));
+                       scale(calc(clamp(0.15, 0.39 * var(--scale-factor), 1.5)));
             transform-origin: center center;
             will-change: transform;
             background: 
@@ -256,11 +256,15 @@
     </div>
 
     <script>
-        // Dynamic scaling based on viewport
+        // Dynamic scaling based on viewport with safety limits
         function updateScale() {
             const baseWidth = 1920; // Reference desktop width
             const currentWidth = window.innerWidth;
-            const scaleFactor = currentWidth / baseWidth;
+            
+            // Clamp the scale factor to prevent extreme values
+            let scaleFactor = currentWidth / baseWidth;
+            scaleFactor = Math.max(0.3, Math.min(scaleFactor, 2.0));
+            
             document.documentElement.style.setProperty('--scale-factor', scaleFactor);
         }
 
@@ -287,15 +291,30 @@
             }
         }
 
+        // Debounce function to limit resize event frequency
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         // Initial setup
         updateScale();
         checkOrientation();
         
-        // Update on resize
-        window.addEventListener('resize', () => {
+        // Debounced resize handler
+        const debouncedResize = debounce(() => {
             updateScale();
-            setTimeout(checkOrientation, 100);
-        });
+            checkOrientation();
+        }, 150);
+        
+        window.addEventListener('resize', debouncedResize);
         
         window.addEventListener('orientationchange', () => {
             updateScale();
@@ -308,8 +327,6 @@
                 setTimeout(checkOrientation, 100);
             });
         }
-        
-        setInterval(checkOrientation, 500);
     </script>
 </body>
 </html>
